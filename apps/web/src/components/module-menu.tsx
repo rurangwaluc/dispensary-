@@ -20,7 +20,7 @@ import { useState } from 'react';
 
 const moduleGroups = [
   {
-    title: 'Main',
+    title: 'Home',
     items: [
       {
         label: 'Dashboard',
@@ -30,7 +30,7 @@ const moduleGroups = [
     ],
   },
   {
-    title: 'Work',
+    title: 'Daily work',
     items: [
       {
         label: 'Sales',
@@ -80,7 +80,7 @@ const moduleGroups = [
     ],
   },
   {
-    title: 'System',
+    title: 'Settings',
     items: [
       {
         label: 'Settings',
@@ -105,7 +105,7 @@ export function ModuleMenu() {
         aria-haspopup="menu"
       >
         <ClipboardList className="h-4 w-4" />
-        <span className="hidden sm:inline">Modules</span>
+        <span className="hidden sm:inline">Menu</span>
         <ChevronDown className="h-4 w-4" />
       </button>
 
@@ -121,10 +121,10 @@ export function ModuleMenu() {
           <div className="fixed inset-x-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/10 dark:border-slate-800 dark:bg-slate-950 sm:absolute sm:inset-auto sm:right-0 sm:top-12 sm:w-[360px]">
             <div className="mb-3 border-b border-slate-100 pb-3 dark:border-slate-800">
               <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-700 dark:text-sky-300">
-                System modules
+                Menu
               </p>
               <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-                Open the area you want to manage.
+                Choose what you want to manage.
               </p>
             </div>
 
@@ -144,6 +144,7 @@ export function ModuleMenu() {
                         <Link
                           key={item.href}
                           href={item.href}
+                          prefetch
                           onClick={() => setIsOpen(false)}
                           className={
                             isActive

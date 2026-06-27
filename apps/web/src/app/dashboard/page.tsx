@@ -92,7 +92,7 @@ export default async function DashboardPage() {
                   Needs attention
                 </h2>
                 <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  The owner should check these before making decisions.
+                  Check these first today.
                 </p>
               </div>
               <span className="rounded-md bg-yellow-100 px-2.5 py-1 text-xs font-black text-yellow-800 dark:bg-yellow-950/60 dark:text-yellow-200">
@@ -115,15 +115,15 @@ export default async function DashboardPage() {
           <article className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
             <div className="mb-5 border-b border-slate-100 pb-4 dark:border-slate-800">
               <h2 className="text-lg font-black tracking-tight text-slate-950 dark:text-white">
-                Authentication status
+                Owner access
               </h2>
               <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-                Owner access is active and protected.
+                Only the owner can open this system.
               </p>
             </div>
 
             <div className="space-y-3">
-              {['Owner login works', 'Dashboard is protected', 'Logout is active', 'Mobile layout is ready'].map(
+              {['Owner can sign in', 'Dashboard is private', 'Owner can sign out', 'Works on phone screen'].map(
                 (item) => (
                   <div
                     key={item}

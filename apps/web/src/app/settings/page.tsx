@@ -26,25 +26,25 @@ export default async function SettingsPage() {
         <section className="grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
           <aside className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
             <h2 className="text-lg font-black tracking-tight text-slate-950 dark:text-white">
-              What these settings control
+              Why these details matter
             </h2>
             <div className="mt-5 divide-y divide-slate-100 text-sm dark:divide-slate-800">
               <div className="py-3">
-                <p className="font-black text-slate-800 dark:text-slate-200">Dashboard labels</p>
+                <p className="font-black text-slate-800 dark:text-slate-200">Business name</p>
                 <p className="mt-1 font-medium leading-6 text-slate-500 dark:text-slate-400">
-                  Business and owner identity across the system.
+                  This name will appear in the system and reports.
                 </p>
               </div>
               <div className="py-3">
-                <p className="font-black text-slate-800 dark:text-slate-200">Stock warnings</p>
+                <p className="font-black text-slate-800 dark:text-slate-200">Low stock warning</p>
                 <p className="mt-1 font-medium leading-6 text-slate-500 dark:text-slate-400">
-                  When a product should be shown as low stock.
+                  The system will warn you when stock becomes too low.
                 </p>
               </div>
               <div className="py-3">
-                <p className="font-black text-slate-800 dark:text-slate-200">Expiry warnings</p>
+                <p className="font-black text-slate-800 dark:text-slate-200">Expiry warning</p>
                 <p className="mt-1 font-medium leading-6 text-slate-500 dark:text-slate-400">
-                  How early drugs should appear as expiring soon.
+                  The system will warn you before drugs expire.
                 </p>
               </div>
             </div>
@@ -53,10 +53,10 @@ export default async function SettingsPage() {
           <section className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
             <div className="mb-5 border-b border-slate-100 pb-4 dark:border-slate-800">
               <h2 className="text-lg font-black tracking-tight text-slate-950 dark:text-white">
-                Main business details
+                Business details
               </h2>
               <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-                Keep this simple. These details will support reports and alerts later.
+                These details help the system show correct business information.
               </p>
             </div>
 

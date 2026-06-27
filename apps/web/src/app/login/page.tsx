@@ -35,13 +35,13 @@ export default async function LoginPage() {
           <div className="w-full max-w-md">
             <div className="mb-6 text-center">
               <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">
-                Private access
+                Owner access
               </p>
               <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">
-                Owner sign in
+                Owner login
               </h1>
               <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                Access the dispensary dashboard for sales, stock, debts, expenses, and reports.
+                Open the dashboard to manage sales, stock, debts, expenses, and reports.
               </p>
             </div>
 
