@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { and, desc, eq, ilike, or } from 'drizzle-orm';
-import { Archive, Edit, Plus, Search } from 'lucide-react';
+import { Edit, Plus, Search } from 'lucide-react';
 import { db } from '@dispensary/db/client';
-import { products } from '@dispensary/db/schema';
-import { archiveProductAction } from '@/lib/products/actions';
+import { businessSettings, products } from '@dispensary/db/schema';
+import { HideItemButton } from './hide-item-button';
 
 type ProductsPageProps = {
   searchParams?: Promise<{
@@ -40,7 +40,7 @@ function getStockLabel(quantity: number, minQuantity: number) {
   };
 }
 
-function getExpiryLabel(expiryDate: string | null) {
+function getExpiryLabel(expiryDate: string | null, warningDays: number) {
   if (!expiryDate) {
     return {
       text: 'No date',
@@ -65,7 +65,7 @@ function getExpiryLabel(expiryDate: string | null) {
     };
   }
 
-  if (daysLeft <= 60) {
+  if (daysLeft <= warningDays) {
     return {
       text: 'Expiring soon',
       className:
@@ -97,7 +97,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const q = params?.q?.trim() || '';
   const selectedType = params?.type === 'PRODUCT' || params?.type === 'SERVICE' ? params.type : '';
 
-  const activeProducts = await db
+  const settings = await db.select().from(businessSettings).limit(1);
+  const expiryWarningDays = Number(settings[0]?.expiryAlertDays || 60);
+
+  const activeItems = await db
     .select()
     .from(products)
     .where(
@@ -124,14 +127,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     (item) => item.itemType === 'PRODUCT' && item.quantity <= item.minQuantity,
   ).length;
   const expiringSoonCount = allActiveItems.filter(
-    (item) => item.itemType === 'PRODUCT' && getExpiryLabel(item.expiryDate).isSoon,
+    (item) => item.itemType === 'PRODUCT' && getExpiryLabel(item.expiryDate, expiryWarningDays).isSoon,
   ).length;
 
   const summary = [
     { label: 'Products', value: productCount, helper: 'Drugs and stock' },
-    { label: 'Services', value: serviceCount, helper: 'Work without stock' },
+    { label: 'Services', value: serviceCount, helper: 'No stock needed' },
     { label: 'Low stock', value: lowStockCount, helper: 'Need restock' },
-    { label: 'Expiring soon', value: expiringSoonCount, helper: 'Check dates' },
+    { label: 'Expiring soon', value: expiringSoonCount, helper: `${expiryWarningDays} days warning` },
   ];
 
   const filters = [
@@ -143,19 +146,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   return (
     <section className="space-y-4">
       <div className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
             <h2 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">
               Products and services
             </h2>
             <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-              Manage drugs, stock quantity, prices, expiry dates, and services sold by the dispensary.
+              Manage drugs, services, prices, stock, suppliers, and expiry dates.
             </p>
           </div>
 
           <Link
             href="/products/new"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600 lg:w-auto"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
           >
             <Plus className="h-4 w-4" />
             Add item
@@ -190,7 +193,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               href={filter.href}
               className={
                 filter.active
-                  ? 'inline-flex h-9 items-center justify-center rounded-lg border border-sky-300 bg-sky-50 px-4 text-xs font-black text-sky-800 dark:border-sky-900/70 dark:bg-sky-950/40 dark:text-sky-200'
+                  ? 'inline-flex h-9 items-center justify-center rounded-lg border border-sky-300 bg-sky-50 px-4 text-xs font-black text-sky-800 dark:border-sky-500 dark:bg-sky-500 dark:text-white'
                   : 'inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-black text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-700'
               }
             >
@@ -207,7 +210,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               name="q"
               defaultValue={q}
               placeholder="Search name, category, batch, or supplier"
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
             />
           </div>
           <button className="h-11 rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900">
@@ -216,24 +219,24 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </form>
       </div>
 
-      {activeProducts.length === 0 ? (
+      {activeItems.length === 0 ? (
         <section className="border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
           <div className="mx-auto max-w-xl text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
               <Plus className="h-5 w-5" />
             </div>
             <h3 className="mt-4 text-xl font-black tracking-tight text-slate-950 dark:text-white">
-              No items added yet
+              No items found
             </h3>
             <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-              Add your first product or service so sales can start working.
+              Add a product or service, or change your search.
             </p>
             <Link
               href="/products/new"
               className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
             >
               <Plus className="h-4 w-4" />
-              Add first item
+              Add item
             </Link>
           </div>
         </section>
@@ -251,14 +254,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {activeProducts.map((item) => {
+                {activeItems.map((item) => {
                   const stockLabel = getStockLabel(item.quantity, item.minQuantity);
-                  const expiryLabel = getExpiryLabel(item.expiryDate);
+                  const expiryLabel = getExpiryLabel(item.expiryDate, expiryWarningDays);
                   const isService = item.itemType === 'SERVICE';
 
                   return (
                     <tr key={item.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-950/70">
-                      <td className="px-4 py-4 align-top">
+                      <td className="px-4 py-5 align-top">
                         <p className="font-black text-slate-900 dark:text-white">{item.name}</p>
                         <div className="mt-1 space-y-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
                           <p>{item.category}</p>
@@ -271,13 +274,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                         </div>
                       </td>
 
-                      <td className="px-4 py-4 align-top">
+                      <td className="px-4 py-5 align-top">
                         <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-black text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
                           {isService ? 'Service' : 'Product'}
                         </span>
                       </td>
 
-                      <td className="px-4 py-4 align-top">
+                      <td className="px-4 py-5 align-top">
                         <p className="font-black text-slate-900 dark:text-white">
                           {money(item.sellingPrice)}
                         </p>
@@ -288,7 +291,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                         ) : null}
                       </td>
 
-                      <td className="px-4 py-4 align-top">
+                      <td className="px-4 py-5 align-top">
                         {isService ? (
                           <p className="font-black text-slate-900 dark:text-white">No stock needed</p>
                         ) : (
@@ -308,7 +311,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                         )}
                       </td>
 
-                      <td className="px-4 py-4 align-top">
+                      <td className="px-4 py-5 align-top">
                         <div className="flex justify-end gap-2">
                           <Link
                             href={`/products/${item.id}/edit`}
@@ -317,13 +320,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             <Edit className="h-3.5 w-3.5" />
                             Edit
                           </Link>
-                          <form action={archiveProductAction}>
-                            <input type="hidden" name="productId" value={item.id} />
-                            <button className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition hover:border-red-300 hover:text-red-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-red-900 dark:hover:text-red-300">
-                              <Archive className="h-3.5 w-3.5" />
-                              Hide
-                            </button>
-                          </form>
+                          <HideItemButton itemId={item.id} itemName={item.name} />
                         </div>
                       </td>
                     </tr>
@@ -334,9 +331,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </div>
 
           <div className="space-y-3 md:hidden">
-            {activeProducts.map((item) => {
+            {activeItems.map((item) => {
               const stockLabel = getStockLabel(item.quantity, item.minQuantity);
-              const expiryLabel = getExpiryLabel(item.expiryDate);
+              const expiryLabel = getExpiryLabel(item.expiryDate, expiryWarningDays);
               const isService = item.itemType === 'SERVICE';
 
               return (
@@ -406,13 +403,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       <Edit className="h-3.5 w-3.5" />
                       Edit
                     </Link>
-                    <form action={archiveProductAction}>
-                      <input type="hidden" name="productId" value={item.id} />
-                      <button className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition hover:border-red-300 hover:text-red-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
-                        <Archive className="h-3.5 w-3.5" />
-                        Hide
-                      </button>
-                    </form>
+                    <div className="[&_button]:h-10 [&_button]:w-full">
+                      <HideItemButton itemId={item.id} itemName={item.name} />
+                    </div>
                   </div>
                 </article>
               );
