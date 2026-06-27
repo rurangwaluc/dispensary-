@@ -1,7 +1,5 @@
-import Link from 'next/link';
-import { Banknote, Boxes, CreditCard, LogOut, Settings, TrendingUp } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { logoutAction } from '@/lib/auth/actions';
+import { Banknote, Boxes, CreditCard, TrendingUp } from 'lucide-react';
+import { AppHeader } from '@/components/app-header';
 import { requireOwner } from '@/lib/auth/session';
 
 const summaryCards = [
@@ -60,40 +58,7 @@ export default async function DashboardPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-3 py-3 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-5 sm:py-5 lg:px-8">
       <div className="mx-auto w-full max-w-7xl space-y-4 sm:space-y-5">
-        <header className="border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:px-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-500 text-sm font-black text-white">
-                D
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-sky-700 dark:text-sky-300">
-                  Dashboard
-                </p>
-                <h1 className="truncate text-xl font-black tracking-tight text-slate-950 dark:text-white sm:text-2xl">
-                  Welcome, {owner.name}
-                </h1>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <Link
-                href="/settings"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900"
-              >
-                <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">Settings</span>
-              </Link>
-              <form action={logoutAction}>
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900">
-                  <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline">Logout</span>
-                </button>
-              </form>
-            </div>
-          </div>
-        </header>
+        <AppHeader eyebrow="Dashboard" title={`Welcome, ${owner.name}`} />
 
         <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {summaryCards.map((card) => (
