@@ -124,7 +124,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     .where(
       and(
         eq(products.status, 'ACTIVE'),
-        selectedType ? eq(products.itemType, selectedType) : undefined,
+        eq(products.itemType, 'PRODUCT'),
         q
           ? or(
               ilike(products.name, `%${q}%`),
@@ -157,9 +157,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   ];
 
   const filters = [
-    { label: 'All', href: filterLink(null), active: !selectedType },
-    { label: 'Products', href: filterLink('PRODUCT'), active: selectedType === 'PRODUCT' },
-    { label: 'Services', href: filterLink('SERVICE'), active: selectedType === 'SERVICE' },
+    { label: 'All products', href: '/products', active: true },
   ];
 
   return (
@@ -168,10 +166,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
             <h2 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">
-              Products and services
+              Products
             </h2>
             <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-              Manage drugs, services, prices, stock, suppliers, and expiry dates.
+              Manage drugs, prices, stock, suppliers, and expiry dates.
             </p>
           </div>
 
@@ -180,7 +178,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
           >
             <Plus className="h-4 w-4" />
-            Add item
+            Add product
           </Link>
         </div>
       </div>
@@ -245,17 +243,17 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               <Plus className="h-5 w-5" />
             </div>
             <h3 className="mt-4 text-xl font-black tracking-tight text-slate-950 dark:text-white">
-              No items found
+              No products found
             </h3>
             <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-              Add a product or service, or change your search.
+              Add a product or change your search.
             </p>
             <Link
               href="/products/new"
               className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
             >
               <Plus className="h-4 w-4" />
-              Add item
+              Add product
             </Link>
           </div>
         </section>
@@ -438,7 +436,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
             {hasMore ? (
               <Link
-                href={buildLoadMoreHref(q, selectedType, take + PAGE_SIZE)}
+                href={buildLoadMoreHref(q, '', take + PAGE_SIZE)}
                 className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
               >
                 Load more
