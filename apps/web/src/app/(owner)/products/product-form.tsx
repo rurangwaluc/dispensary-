@@ -5,6 +5,8 @@ import { useActionState, useState } from 'react';
 import { createProductAction, updateProductAction } from '@/lib/products/actions';
 
 type ProductFormProps = {
+  defaultItemType?: 'PRODUCT' | 'SERVICE';
+  backHref?: string;
   product?: {
     id: string;
     itemType: 'PRODUCT' | 'SERVICE';
@@ -25,70 +27,22 @@ type ProductFormProps = {
 const inputClass =
   'h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950';
 
-const selectedChoiceClass =
-  'cursor-pointer rounded-lg border border-sky-400 bg-sky-500 px-4 py-4 text-sm font-black text-white shadow-sm dark:border-sky-300 dark:bg-sky-500 dark:text-white';
-
-const normalChoiceClass =
-  'cursor-pointer rounded-lg border border-slate-200 bg-white px-4 py-4 text-sm font-black text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200';
-
-export function ProductForm({ product }: ProductFormProps) {
+export function ProductForm({
+  product,
+  defaultItemType = 'PRODUCT',
+  backHref,
+}: ProductFormProps) {
+  const initialType = product?.itemType || defaultItemType;
   const action = product ? updateProductAction.bind(null, product.id) : createProductAction;
   const [state, formAction, pending] = useActionState(action, {});
-  const [itemType, setItemType] = useState<'PRODUCT' | 'SERVICE'>(product?.itemType || 'PRODUCT');
+  const [itemType] = useState<'PRODUCT' | 'SERVICE'>(initialType);
 
   const isService = itemType === 'SERVICE';
+  const safeBackHref = backHref || (isService ? '/services' : '/products');
 
   return (
     <form action={formAction} className="space-y-5">
-      <div className="border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-        <p className="mb-3 text-sm font-black text-slate-900 dark:text-white">
-          What are you adding?
-        </p>
-
-        <div className="grid grid-cols-2 gap-3">
-          <label className={itemType === 'PRODUCT' ? selectedChoiceClass : normalChoiceClass}>
-            <input
-              type="radio"
-              name="itemType"
-              value="PRODUCT"
-              checked={itemType === 'PRODUCT'}
-              onChange={() => setItemType('PRODUCT')}
-              className="sr-only"
-            />
-            <span className="block">Product / drug</span>
-            <span
-              className={
-                itemType === 'PRODUCT'
-                  ? 'mt-1 block text-xs font-bold text-sky-100'
-                  : 'mt-1 block text-xs font-bold text-slate-500 dark:text-slate-400'
-              }
-            >
-              Has stock and expiry date
-            </span>
-          </label>
-
-          <label className={itemType === 'SERVICE' ? selectedChoiceClass : normalChoiceClass}>
-            <input
-              type="radio"
-              name="itemType"
-              value="SERVICE"
-              checked={itemType === 'SERVICE'}
-              onChange={() => setItemType('SERVICE')}
-              className="sr-only"
-            />
-            <span className="block">Service</span>
-            <span
-              className={
-                itemType === 'SERVICE'
-                  ? 'mt-1 block text-xs font-bold text-sky-100'
-                  : 'mt-1 block text-xs font-bold text-slate-500 dark:text-slate-400'
-              }
-            >
-              No stock needed
-            </span>
-          </label>
-        </div>
-      </div>
+      <input type="hidden" name="itemType" value={itemType} />
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
@@ -113,7 +67,7 @@ export function ProductForm({ product }: ProductFormProps) {
             id="category"
             name="category"
             defaultValue={product?.category || ''}
-            placeholder={isService ? 'Example: Treatment service' : 'Example: Pain medicine'}
+            placeholder={isService ? 'Example: Treatment' : 'Example: Pain medicine'}
             required
             className={inputClass}
           />
@@ -130,34 +84,24 @@ export function ProductForm({ product }: ProductFormProps) {
           <>
             <div className="space-y-2">
               <label htmlFor="unit" className="text-sm font-black text-slate-800 dark:text-slate-200">
-                Unit
+                Count by
               </label>
               <input
                 id="unit"
                 name="unit"
                 defaultValue={product?.unit || ''}
-                placeholder="Tablet, bottle, box..."
+                placeholder="Tablet, bottle, box, vial..."
                 required
                 className={inputClass}
               />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="batchNumber" className="text-sm font-black text-slate-800 dark:text-slate-200">
-                Batch number
-              </label>
-              <input
-                id="batchNumber"
-                name="batchNumber"
-                defaultValue={product?.batchNumber || ''}
-                placeholder="Optional"
-                className={inputClass}
-              />
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                This is how the owner counts this product.
+              </p>
             </div>
 
             <div className="space-y-2">
               <label htmlFor="buyingPrice" className="text-sm font-black text-slate-800 dark:text-slate-200">
-                Buying price
+                Cost each
               </label>
               <input
                 id="buyingPrice"
@@ -232,7 +176,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
             <div className="space-y-2">
               <label htmlFor="supplierName" className="text-sm font-black text-slate-800 dark:text-slate-200">
-                Supplier name
+                Supplier
               </label>
               <input
                 id="supplierName"
@@ -268,10 +212,10 @@ export function ProductForm({ product }: ProductFormProps) {
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Link
-          href="/products"
-          className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900"
+          href={safeBackHref}
+          className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
         >
-          Back to list
+          Back
         </Link>
         <button
           type="submit"

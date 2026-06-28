@@ -17,6 +17,10 @@ function cleanOptional(value: string | undefined) {
   return cleaned ? cleaned : null;
 }
 
+function redirectPath(itemType: 'PRODUCT' | 'SERVICE') {
+  return itemType === 'SERVICE' ? '/services' : '/products';
+}
+
 function getFormValues(formData: FormData) {
   const itemType = formData.get('itemType') === 'SERVICE' ? 'SERVICE' : 'PRODUCT';
 
@@ -25,7 +29,7 @@ function getFormValues(formData: FormData) {
     name: formData.get('name'),
     category: formData.get('category'),
     unit: itemType === 'SERVICE' ? 'Service' : formData.get('unit'),
-    batchNumber: itemType === 'SERVICE' ? undefined : formData.get('batchNumber') || undefined,
+    batchNumber: undefined,
     supplierName: itemType === 'SERVICE' ? undefined : formData.get('supplierName') || undefined,
     buyingPrice: itemType === 'SERVICE' ? '0' : formData.get('buyingPrice'),
     sellingPrice: formData.get('sellingPrice'),
@@ -55,7 +59,7 @@ export async function createProductAction(
     name: parsed.data.name,
     category: parsed.data.category,
     unit: parsed.data.unit,
-    batchNumber: cleanOptional(parsed.data.batchNumber),
+    batchNumber: null,
     supplierName: cleanOptional(parsed.data.supplierName),
     buyingPrice: parsed.data.buyingPrice,
     sellingPrice: parsed.data.sellingPrice,
@@ -67,7 +71,10 @@ export async function createProductAction(
   });
 
   revalidatePath('/products');
-  redirect('/products');
+  revalidatePath('/services');
+  revalidatePath('/stock');
+  revalidatePath('/sales/new');
+  redirect(redirectPath(parsed.data.itemType));
 }
 
 export async function updateProductAction(
@@ -92,7 +99,7 @@ export async function updateProductAction(
       name: parsed.data.name,
       category: parsed.data.category,
       unit: parsed.data.unit,
-      batchNumber: cleanOptional(parsed.data.batchNumber),
+      batchNumber: null,
       supplierName: cleanOptional(parsed.data.supplierName),
       buyingPrice: parsed.data.buyingPrice,
       sellingPrice: parsed.data.sellingPrice,
@@ -105,7 +112,10 @@ export async function updateProductAction(
     .where(eq(products.id, productId));
 
   revalidatePath('/products');
-  redirect('/products');
+  revalidatePath('/services');
+  revalidatePath('/stock');
+  revalidatePath('/sales/new');
+  redirect(redirectPath(parsed.data.itemType));
 }
 
 export async function archiveProductAction(formData: FormData) {
@@ -126,4 +136,6 @@ export async function archiveProductAction(formData: FormData) {
     .where(eq(products.id, productId));
 
   revalidatePath('/products');
+  revalidatePath('/services');
+  revalidatePath('/stock');
 }

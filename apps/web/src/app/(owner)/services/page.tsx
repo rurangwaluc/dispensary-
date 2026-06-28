@@ -79,7 +79,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
           </div>
 
           <Link
-            href="/products/new"
+            href="/services/new"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
           >
             <Plus className="h-4 w-4" />
@@ -133,7 +133,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
             Add services the dispensary offers, or change your search.
           </p>
           <Link
-            href="/products/new"
+            href="/services/new"
             className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
           >
             <Plus className="h-4 w-4" />
