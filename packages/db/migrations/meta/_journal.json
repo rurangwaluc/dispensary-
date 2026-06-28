@@ -64,6 +64,13 @@
       "when": 1782647686424,
       "tag": "0008_oval_wallop",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1782648735218,
+      "tag": "0009_cheerful_the_captain",
+      "breakpoints": true
     }
   ]
 }

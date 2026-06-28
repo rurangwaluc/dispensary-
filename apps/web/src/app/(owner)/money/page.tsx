@@ -1,13 +1,14 @@
 import { desc } from 'drizzle-orm';
 import { db } from '@dispensary/db/client';
-import { expenses, moneyTransfers } from '@dispensary/db/schema';
+import { expenses, moneyAdditions, moneyTransfers } from '@dispensary/db/schema';
+import { addMoneyAction, moveMoneyAction } from '@/lib/money/actions';
 import { getMoneyBalances, paymentMethods, paymentName } from '@/lib/money/balance';
-import { moveMoneyAction } from '@/lib/money/actions';
 
 type MoneyPageProps = {
   searchParams?: Promise<{
     error?: string;
     moved?: string;
+    added?: string;
   }>;
 };
 
@@ -19,12 +20,20 @@ export default async function MoneyPage({ searchParams }: MoneyPageProps) {
   const params = await searchParams;
   const error = params?.error || '';
   const moved = params?.moved === '1';
+  const added = params?.added === '1';
 
   const balances = await getMoneyBalances();
+
   const transferList = await db
     .select()
     .from(moneyTransfers)
     .orderBy(desc(moneyTransfers.movedAt))
+    .limit(10);
+
+  const additionList = await db
+    .select()
+    .from(moneyAdditions)
+    .orderBy(desc(moneyAdditions.addedAt))
     .limit(10);
 
   const expenseList = await db
@@ -44,7 +53,7 @@ export default async function MoneyPage({ searchParams }: MoneyPageProps) {
           Money
         </h2>
         <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-          See money in cash, mobile money, bank, and card.
+          See what came in, what went out, and what is left.
         </p>
       </div>
 
@@ -102,14 +111,80 @@ export default async function MoneyPage({ searchParams }: MoneyPageProps) {
         </article>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[380px_1fr]">
+      <section className="grid gap-4 xl:grid-cols-[380px_380px_1fr]">
+        <form
+          action={addMoneyAction}
+          className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+        >
+          <h3 className="text-lg font-black text-slate-950 dark:text-white">Add money</h3>
+          <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+            Use this when the owner puts money in.
+          </p>
+
+          <div className="mt-4 space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="paymentMethod" className="text-sm font-black text-slate-800 dark:text-slate-200">
+                Where
+              </label>
+              <select
+                id="paymentMethod"
+                name="paymentMethod"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-950 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-sky-400 dark:focus:ring-sky-950"
+              >
+                {paymentMethods.map((method) => (
+                  <option key={method} value={method}>
+                    {paymentName(method)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="addAmount" className="text-sm font-black text-slate-800 dark:text-slate-200">
+                Amount
+              </label>
+              <input
+                id="addAmount"
+                name="amount"
+                inputMode="decimal"
+                required
+                placeholder="Example: 20000"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="addNotes" className="text-sm font-black text-slate-800 dark:text-slate-200">
+                Notes
+              </label>
+              <textarea
+                id="addNotes"
+                name="notes"
+                rows={3}
+                placeholder="Example: Starting cash"
+                className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+              />
+            </div>
+          </div>
+
+          {added ? (
+            <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-200">
+              Money added.
+            </div>
+          ) : null}
+
+          <button className="mt-5 h-11 w-full rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600">
+            Add money
+          </button>
+        </form>
+
         <form
           action={moveMoneyAction}
           className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
         >
           <h3 className="text-lg font-black text-slate-950 dark:text-white">Move money</h3>
           <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            Example: move cash to bank after deposit.
+            Example: move cash to bank.
           </p>
 
           <div className="mt-4 space-y-4">
@@ -149,11 +224,11 @@ export default async function MoneyPage({ searchParams }: MoneyPageProps) {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="amount" className="text-sm font-black text-slate-800 dark:text-slate-200">
+              <label htmlFor="moveAmount" className="text-sm font-black text-slate-800 dark:text-slate-200">
                 Amount
               </label>
               <input
-                id="amount"
+                id="moveAmount"
                 name="amount"
                 inputMode="decimal"
                 required
@@ -163,11 +238,11 @@ export default async function MoneyPage({ searchParams }: MoneyPageProps) {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="notes" className="text-sm font-black text-slate-800 dark:text-slate-200">
+              <label htmlFor="moveNotes" className="text-sm font-black text-slate-800 dark:text-slate-200">
                 Notes
               </label>
               <textarea
-                id="notes"
+                id="moveNotes"
                 name="notes"
                 rows={3}
                 placeholder="Optional"
@@ -193,7 +268,30 @@ export default async function MoneyPage({ searchParams }: MoneyPageProps) {
           </button>
         </form>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-1">
+          <article className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h3 className="text-lg font-black text-slate-950 dark:text-white">Recent money added</h3>
+
+            {additionList.length === 0 ? (
+              <p className="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">
+                No money added yet.
+              </p>
+            ) : (
+              <div className="mt-4 divide-y divide-slate-100 dark:divide-slate-800">
+                {additionList.map((addition) => (
+                  <div key={addition.id} className="py-3">
+                    <p className="font-black text-slate-900 dark:text-white">
+                      {paymentName(addition.paymentMethod)}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {money(addition.amount)} · {addition.addedAt.toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </article>
+
           <article className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <h3 className="text-lg font-black text-slate-950 dark:text-white">Recent money moved</h3>
 

@@ -12,4 +12,11 @@ export const moneyTransferSchema = z.object({
   notes: z.string().trim().max(1000).optional(),
 });
 
+export const addMoneySchema = z.object({
+  paymentMethod: z.enum(['CASH', 'MOBILE_MONEY', 'BANK', 'CARD']),
+  amount: moneySchema,
+  notes: z.string().trim().max(1000).optional(),
+});
+
 export type MoneyTransferInput = z.infer<typeof moneyTransferSchema>;
+export type AddMoneyInput = z.infer<typeof addMoneySchema>;

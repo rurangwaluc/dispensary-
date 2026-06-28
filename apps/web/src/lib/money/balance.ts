@@ -1,5 +1,11 @@
 import { db } from '@dispensary/db/client';
-import { debtPayments, expenses, moneyTransfers, sales } from '@dispensary/db/schema';
+import {
+  debtPayments,
+  expenses,
+  moneyAdditions,
+  moneyTransfers,
+  sales,
+} from '@dispensary/db/schema';
 
 export type PaymentMethod = 'CASH' | 'MOBILE_MONEY' | 'BANK' | 'CARD';
 
@@ -17,14 +23,20 @@ export function paymentName(value: string) {
 }
 
 export async function getMoneyBalances() {
-  const [saleList, debtPaymentList, expenseList, transferList] = await Promise.all([
-    db.select().from(sales),
-    db.select().from(debtPayments),
-    db.select().from(expenses),
-    db.select().from(moneyTransfers),
-  ]);
+  const [saleList, debtPaymentList, expenseList, transferList, additionList] =
+    await Promise.all([
+      db.select().from(sales),
+      db.select().from(debtPayments),
+      db.select().from(expenses),
+      db.select().from(moneyTransfers),
+      db.select().from(moneyAdditions),
+    ]);
 
   return paymentMethods.map((method) => {
+    const addedMoney = additionList
+      .filter((addition) => addition.paymentMethod === method)
+      .reduce((sum, addition) => sum + Number(addition.amount), 0);
+
     const salesIn = saleList
       .filter((sale) => sale.paymentMethod === method)
       .reduce((sum, sale) => sum + Number(sale.paidAmount), 0);
@@ -45,12 +57,15 @@ export async function getMoneyBalances() {
       .filter((transfer) => transfer.fromPaymentMethod === method)
       .reduce((sum, transfer) => sum + Number(transfer.amount), 0);
 
+    const moneyIn = addedMoney + salesIn + debtIn + transferIn;
+    const moneyOut = expensesOut + transferOut;
+
     return {
       method,
       name: paymentName(method),
-      balance: salesIn + debtIn + transferIn - expensesOut - transferOut,
-      moneyIn: salesIn + debtIn + transferIn,
-      moneyOut: expensesOut + transferOut,
+      balance: moneyIn - moneyOut,
+      moneyIn,
+      moneyOut,
     };
   });
 }

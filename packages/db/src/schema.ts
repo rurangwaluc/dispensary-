@@ -163,6 +163,15 @@ export const moneyTransfers = pgTable('money_transfers', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const moneyAdditions = pgTable('money_additions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  paymentMethod: paymentMethodEnum('payment_method').notNull().default('CASH'),
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  notes: text('notes'),
+  addedAt: timestamp('added_at', { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
 }));
@@ -249,3 +258,6 @@ export type NewExpense = typeof expenses.$inferInsert;
 
 export type MoneyTransfer = typeof moneyTransfers.$inferSelect;
 export type NewMoneyTransfer = typeof moneyTransfers.$inferInsert;
+
+export type MoneyAddition = typeof moneyAdditions.$inferSelect;
+export type NewMoneyAddition = typeof moneyAdditions.$inferInsert;

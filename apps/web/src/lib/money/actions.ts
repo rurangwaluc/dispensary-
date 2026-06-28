@@ -3,14 +3,46 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { db } from '@dispensary/db/client';
-import { moneyTransfers } from '@dispensary/db/schema';
-import { moneyTransferSchema } from '@dispensary/validators/money';
+import { moneyAdditions, moneyTransfers } from '@dispensary/db/schema';
+import { addMoneySchema, moneyTransferSchema } from '@dispensary/validators/money';
 import { requireOwner } from '@/lib/auth/session';
 import { getPaymentMethodBalance, paymentName } from './balance';
 
 function cleanOptional(value: string | undefined) {
   const cleaned = value?.trim();
   return cleaned ? cleaned : null;
+}
+
+export async function addMoneyAction(formData: FormData) {
+  await requireOwner();
+
+  const parsed = addMoneySchema.safeParse({
+    paymentMethod: formData.get('paymentMethod'),
+    amount: formData.get('amount') || '0',
+    notes: formData.get('notes') || undefined,
+  });
+
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message || 'Check the add money form.';
+    redirect(`/money?error=${encodeURIComponent(message)}`);
+  }
+
+  const amount = Number(parsed.data.amount);
+
+  if (amount <= 0) {
+    redirect('/money?error=Amount must be above zero.');
+  }
+
+  await db.insert(moneyAdditions).values({
+    paymentMethod: parsed.data.paymentMethod,
+    amount: parsed.data.amount,
+    notes: cleanOptional(parsed.data.notes),
+  });
+
+  revalidatePath('/money');
+  revalidatePath('/dashboard');
+
+  redirect('/money?added=1');
 }
 
 export async function moveMoneyAction(formData: FormData) {
